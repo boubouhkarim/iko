@@ -1,68 +1,76 @@
-from collections import OrderedDict
-from itertools import islice
 from random import sample
 
 from ..similarities import similarity
 
-def _sample(graph, k):
-
 
 # work in progress
-def get_knn(graph, k, type=1): 
-
-    nodes = sample(graph, k)
-
-    c = 0
+def get_knn(graph, k, similarity_type=1, sample_size=None):
+    # get a random :sample_size or :k*10 sample from the graph
+    if sample_size is None:
+        sample_size = k * 10
+    nodes = sample(graph, sample_size)
+    # Taking :k random neighbour for each node
+    _set_random_neighbours(nodes, k)
 
     while True:
-        # reverse calcutation for all the node
+        # reverse calculation for all the node
         _revers(nodes)
         for node in nodes:
             node.set_general_neighbours()
 
+        # initiating the counter for the updated neighbours
         c = 0
-
         for node in nodes:
-            for u in node.general_neighbours:
-                if u
+            for node_u in node.general_neighbours:
+                if node in node_u.general_neighbours:
+                    node_u.general_neighbours.remove(node)
+                for node_v in node_u.general_neighbours:
+                    # looking for neighbours in my neighbours neighbours
+                    distance = similarity(node.profil, node_v.profil, similarity_type)
+                    c = c + _update_nn(node, node_v, distance)
+
+        if c == 0:
+            break
+
+    return nodes
 
 
-
-        if (u1.getGeneralNeighbours().contains(v)) u1.getGeneralNeighbours().remove(v);
-
-
-
-        #     for (Node v : nodes) {
-        #         for (Node u1 : v.getGeneralNeighbours()) {
-        #             if (u1.getGeneralNeighbours().contains(v)) u1.getGeneralNeighbours().remove(v);
-        #             for (Node u2 : u1.getGeneralNeighbours()) {
-        #                 // looking for neighbours in my neighbours neighbours
-        #                 Double l = similarity(type, v.getProfile(), u2.getProfile());
-        #                 c += UpdateNN(v, u2, l);
-        #             }
-        #         }
-        #     }
-        # } while (c != 0);
-
-
-
-    matrix = {}
-    for current_node in graph:
-        sim_matrix = {}
-        for node in graph:
-            if current_node.id != node.id:
-                sim_matrix.update({node: similarity(current_node.profil, node.profil, type)})
-                s = dict(islice(OrderedDict(sorted(sim_matrix.items(), key=(lambda x: x[1]))).items(), k))
-                matrix.update({current_node: s})
-
-    return  matrix
+def _set_random_neighbours(nodes, k):
+    for node in nodes:
+        neighbours_dict = {}
+        nb = sample(nodes, k)
+        for n in nb:
+            neighbours_dict.update({n: similarity(node.profil, n.profil)})
+        node.neighbours = neighbours_dict
 
 
 def _revers(nodes):
-    pass
+    for node in nodes:
+        # declare my self as a revers for my neighbours
+        node.set_neighbours_revers()
+
+
+def _update_nn(node, node_v, distance):
+    if node_v in node.neighbours:
+        # :node_v is already in the neighbours no change needed
+        return 0
+    else:
+        # getting the farthest neighbours to :node in it list of nodes
+        farest_neighbour = node.get_farest_neighbour()
+        # checking if :node_v is closer than the farthest neighbour
+        if distance < farest_neighbour[1]:
+            # if it's the case replace the farthest by the new one
+            node.neighbours.pop(farest_neighbour[0])
+            node.neighbours.update({node_v: distance})
+            return 1
+        else:
+            # if it's not, no changes required.
+            return 0
+
 
 def print_knn(graph):
-    for node, neighbours in graph.items():
+    # print knn graph along with its neighbours
+    for node in graph:
         print(node)
-        for k, v in neighbours.items():
+        for k, v in node.neighbours.items():
             print(f"    {k} : {v}")

@@ -3,17 +3,19 @@ from itertools import islice
 
 from ..similarities import similarity
 
-def get_knn(graph, k, type=1):
+
+def get_knn(graph, k, similarity_type=1):
     matrix = {}
     for current_node in graph:
         sim_matrix = {}
         for node in graph:
             if current_node.id != node.id:
-                sim_matrix.update({node: similarity(current_node.profil, node.profil, type)})
+                sim_matrix.update({node: similarity(current_node.profil, node.profil, similarity_type)})
                 s = dict(islice(OrderedDict(sorted(sim_matrix.items(), key=(lambda x: x[1]))).items(), k))
                 matrix.update({current_node: s})
 
-    return  matrix
+    return matrix
+
 
 def print_knn(graph):
     for node, neighbours in graph.items():

@@ -16,11 +16,11 @@ class Node(object):
         self.neighbours.update({node: d})
 
     def set_neighbours_revers(self):
-        for n, d in self.neighbours:
+        for n, d in self.neighbours.items():
             n.add_revers(self)
 
     def add_revers(self, revers_node):
-        self.reverse.add(revers_node);
+        self.reverse.append(revers_node);
 
     def set_general_neighbours(self):
         self.general_neighbours = list(set(list(self.neighbours.keys()) + self.reverse))
@@ -29,7 +29,8 @@ class Node(object):
         # dict(sorted(words.items(), key=lambda x: x[1]))
         # sorted(stats, key=(lambda key: stats[key]), reverse=True)
         # max(stats.items(), key=lambda x: x[1])
-        return max(self.neighbours, key=self.neighbours.get)
+        # return dict([max(self.neighbours.items(), key=lambda x: x[1])]) # dict(Node: distance)
+        return max(self.neighbours.items(), key=lambda x: x[1]) # tuple(Node, distance)
 
 
 if __name__ == '__main__':

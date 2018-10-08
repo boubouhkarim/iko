@@ -14,8 +14,6 @@ def reader(file, indexes=(2, 3, 4, 5, 6)):
         except:
             pass
         graph.append(Node(index, node_profile))
-        if index > 10:
-            break
     return graph
 
 if __name__ == '__main__':
